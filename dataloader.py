@@ -34,9 +34,6 @@ def transform_letter_to_index(transcript, letter_list):
     return letter_to_index_list
 
 
-'''
-Optional, create dictionaries for letter2index and index2letter transformations
-'''
 def create_dictionaries(letter_list):
     letter2index = dict()
     index2letter = dict()
@@ -45,9 +42,7 @@ def create_dictionaries(letter_list):
 
 class Speech2TextDataset(Dataset):
     '''
-    Dataset class for the speech to text data, this may need some tweaking in the
-    getitem method as your implementation in the collate function may be different from
-    ours. 
+    Dataset class for the speech to text data. 
     '''
     def __init__(self, speech, text=None, isTrain=True):
         self.speech = speech
