@@ -8,10 +8,6 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 class Attention(nn.Module):
     '''
     Attention is calculated using key, value and query from Encoder and decoder.
-    Below are the set of operations you need to perform for computing attention:
-        energy = bmm(key, query)
-        attention = softmax(energy)
-        context = bmm(attention, value)
     '''
     def __init__(self):
         super(Attention, self).__init__()
@@ -73,11 +69,6 @@ class LockedDropout(nn.Module):
 class pBLSTM(nn.Module):
     '''
     Pyramidal BiLSTM
-    The length of utterance (speech input) can be hundereds to thousands of frames long.
-    The Paper reports that a direct LSTM implementation as Encoder resulted in slow convergence,
-    and inferior results even after extensive training.
-    The major reason is inability of AttendAndSpell operation to extract relevant information
-    from a large number of input steps.
     '''
     def __init__(self, input_dim, hidden_dim):
         super(pBLSTM, self).__init__()
@@ -111,7 +102,6 @@ class pBLSTM(nn.Module):
 class Encoder(nn.Module):
     '''
     Encoder takes the utterances as inputs and returns the key and value.
-    Key and value are nothing but simple projections of the output from pBLSTM network.
     '''
     def __init__(self, input_dim, hidden_dim, value_size=128,key_size=128):
         super(Encoder, self).__init__()
@@ -150,11 +140,7 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
     '''
-    As mentioned in a previous recitation, each forward call of decoder deals with just one time step, 
-    thus we use LSTMCell instead of LSLTM here.
-    The output from the second LSTMCell can be used as query here for attention module.
-    In place of value that we get from the attention, this can be replace by context we get from the attention.
-    Methods like Gumble noise and teacher forcing can also be incorporated for improving the performance.
+    Decoder network
     '''
     def __init__(self, vocab_size, hidden_dim, value_size=128, key_size=128, isAttended=False):
         super(Decoder, self).__init__()
@@ -203,10 +189,6 @@ class Decoder(nn.Module):
         context = torch.zeros((values.size(1),values.size(2))).to(DEVICE)
 
         for i in range(max_len):
-            # * Implement Gumble noise and teacher forcing techniques 
-            # * When attention is True, replace values[i,:,:] with the context you get from attention.
-            # * If you haven't implemented attention yet, then you may want to check the index and break 
-            #   out of the loop so you do not get index out of range errors. 
 
             if (isTrain):
 
@@ -271,7 +253,6 @@ class Decoder(nn.Module):
 class Seq2Seq(nn.Module):
     '''
     We train an end-to-end sequence to sequence model comprising of Encoder and Decoder.
-    This is simply a wrapper "model" for your encoder and decoder.
     '''
     def __init__(self, input_dim, vocab_size, hidden_dim, value_size=128, key_size=128, isAttended=False):
         super(Seq2Seq, self).__init__()
